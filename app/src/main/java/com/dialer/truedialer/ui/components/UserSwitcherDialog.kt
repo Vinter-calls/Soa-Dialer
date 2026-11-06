@@ -163,9 +163,9 @@ fun UserSwitcherDialog(
                     ) {
                         Icon(Icons.Default.Security, contentDescription = null, tint = EmeraldGreen, modifier = Modifier.size(16.dp))
                         Text(
-                            "Only center managers are authorized to log in.",
+                            "Supported Login Roles: MANAGER",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.Bold,
                             color = EmeraldGreen
                         )
                     }

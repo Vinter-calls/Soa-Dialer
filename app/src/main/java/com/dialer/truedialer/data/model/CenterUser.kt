@@ -13,12 +13,10 @@ data class CenterUser(
     val isActive: Boolean = true
 ) {
     val isManager: Boolean
-        get() = role == UserRole.MANAGER || role == UserRole.ACADEMIC_MANAGER ||
-                role == UserRole.OPERATIONS_MANAGER || role == UserRole.MEDIA_MANAGER ||
-                role == UserRole.PURCHASE_MANAGER || role == UserRole.ADMIN
+        get() = role == UserRole.MANAGER
 
     val canLogin: Boolean
-        get() = isManager
+        get() = role == UserRole.MANAGER
 }
 
 enum class UserRole {

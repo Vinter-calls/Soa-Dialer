@@ -68,7 +68,7 @@ object AppConfig {
         get() = CURRENT_USER_ID.isNotBlank() && !CURRENT_USER_ROLE.equals("NONE", ignoreCase = true)
 
     val isCurrentUserManager: Boolean
-        get() = isLoggedIn && (CURRENT_USER_ROLE.contains("MANAGER", ignoreCase = true) || CURRENT_USER_ROLE.equals("ADMIN", ignoreCase = true))
+        get() = isLoggedIn && CURRENT_USER_ROLE.equals("MANAGER", ignoreCase = true)
 
     /**
      * Automatically start recording when a call is connected / active
@@ -155,6 +155,8 @@ object AppConfig {
             CURRENT_USER_ROLE = prefs.getString(KEY_CURRENT_USER_ROLE, "NONE") ?: "NONE"
             CURRENT_USER_EMAIL = prefs.getString(KEY_CURRENT_USER_EMAIL, "") ?: ""
             CURRENT_USER_USERNAME = prefs.getString(KEY_CURRENT_USER_USERNAME, "") ?: ""
+            // Ensure Center name is dynamically resolved from active logged-in manager
+            CENTER_NAME = resolveCenterName(CENTER_ID, CURRENT_USER_NAME, CURRENT_USER_EMAIL)
         } else {
             CURRENT_USER_ID = ""
             CURRENT_USER_NAME = "Not Logged In"

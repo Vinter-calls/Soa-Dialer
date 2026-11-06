@@ -105,7 +105,7 @@ fun CrmLoginView(
                     onLoginSuccess(authenticatedUser)
                 } else {
                     loginError = if (isManualInputMode) {
-                        "Invalid username/email or password. Only Managers may log in."
+                        "Invalid username/email or password. Supported Login Roles: MANAGER."
                     } else {
                         "Incorrect password or PIN for ${selectedManager?.name ?: "manager"}. (PIN default: 9999)"
                     }
