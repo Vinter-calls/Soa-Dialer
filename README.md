@@ -1,135 +1,171 @@
-# True Enquiry Dialer (Android) 📞
+# Soa Dialer 📞
 
-A Truecaller-style Android Dialer and Lead Management CRM built with **Kotlin** and **Jetpack Compose**. It connects to your backend **Enquiry Database**, detects unsaved contacts, and includes built-in sales and lead workflows.
-
----
-
-## 🚀 Key Features Implemented
-
-### 1. 📋 Post-Call Action Screen (`PostCallActivity.kt`)
-- Automatically prompts when a call finishes (incoming or outgoing).
-- **Quick Notes**: 1-tap discussion chips (*"Interested - Send Brochure"*, *"Callback requested"*, *"Pricing discussed"*).
-- **Lead Status Update**: 1-tap change (*New Lead*, *Follow-up*, *Converted*, *Lost*, *Spam*).
-- **Scheduled Follow-up Reminders**: Choose *"In 1 Hour"*, *"Tomorrow 10 AM"*, *"Next Week"* to schedule exact local notifications with direct "Call Now" buttons via `AlarmManager`.
-- **Save to Phone Contacts**: Prompted if still not saved.
-- **Auto-Sync to CRM**: Dispatches full call log, notes, and lead status to your CRM Webhook.
-
-### 2. 💬 WhatsApp Business Message Templates (`WhatsAppBusinessHelper.kt`)
-- Direct integration targeting **WhatsApp Business** (`com.whatsapp.w4b`) with automatic fallback to standard WhatsApp.
-- **1-Tap Template Picker**: Previews messages with lead details auto-filled:
-  - *Catalog & Brochure Introduction*: Auto-fills `{name}`, `{company}`, and brochure link.
-  - *Post-Call Summary & Follow-up*: Auto-fills `{name}` and `{requirement}`.
-  - *Missed Call Alert*: Professional prompt to assist the caller.
-  - *Meeting Confirmation*.
-- Send to customer without needing to save their number in contacts first!
-
-### 3. ⚡ Offline SQLite Database & Instant Caller ID Cache (`EnquiryDatabaseHelper.kt`)
-- Local SQLite database on the device storing all enquiries, call notes, templates, and scheduled follow-ups.
-- **Sub-5ms Caller ID response time**: Identifies callers instantaneously even when traveling, in elevators, or offline with zero network connectivity.
-- Automatically synchronizes with your remote backend when connected.
-
-### 4. 📊 Call Analytics & Daily Lead Pipeline Dashboard (`AnalyticsScreen.kt`)
-- Dedicated **Pipeline** tab in bottom navigation:
-  - **KPI Cards**: Recent Calls, Converted Deals, Conversion Rate %, Due Follow-ups.
-  - **Funnel Progress Bars**: Distribution of leads across *New Leads*, *Follow-ups*, *Converted*, *Lost*, *Spam*.
-  - **Today's Due Follow-Up Tasks**: Actionable list of reminders with 1-tap "Call", "WhatsApp", and "Mark Complete" buttons.
-
-### 5. 🚫 Spam & Unqualified Lead Tagging & Auto-Reject (`EnquiryCallScreeningService.kt`)
-- 1-tap "Mark as Spam" on the Caller ID overlay, post-call card, or recents.
-- Highlighted red alert banner on calls from flagged numbers.
-- Optional **Auto-Reject Spam Calls** setting in Settings to automatically silence/reject unwanted calls.
-
-### 6. 🔄 CRM / Google Sheets Webhook Sync (`CrmWebhookSync.kt`)
-- Configurable **Webhook URL** in Settings (supports Google Sheets Apps Script, Make.com, Zapier, Airtable, HubSpot, Custom REST backend).
-- Dispatches event payloads on call completion:
-```json
-{
-  "event": "call_completed",
-  "timestamp": 1730000000000,
-  "phoneNumber": "+919876543210",
-  "callType": "INCOMING",
-  "callDurationSeconds": 142,
-  "postCallNote": "Customer requested pricing quote by Friday",
-  "scheduledFollowUpEpochMs": 1730086400000,
-  "enquiry": {
-    "id": "ENQ-1001",
-    "name": "Rajesh Sharma",
-    "company": "Apex Real Estate",
-    "enquiryType": "3BHK Luxury Villa",
-    "status": "Follow-up",
-    "budget": "₹ 1.8 Cr"
-  }
-}
-```
-- Includes live **Test Ping** button in Settings to verify your webhook endpoint.
+An enterprise-grade **Android Default Dialer and Lead Management CRM** built with **Kotlin** and **Jetpack Compose**. Specifically tailored for admissions teams, telecallers, and center managers to streamline calling workflows, record interactions, manage lead pipelines, and sync directly with **MongoDB Atlas** and **Webhooks**.
 
 ---
 
-## 🏗️ Project Structure
+## 🚀 Key Features
+
+### 1. 🔒 Role-Based CRM Session Lock & Manager Authentication
+- **Secure Access Control**: Database enquiries, student lead profiles, follow-up queues, and pipeline statistics remain strictly locked until an authorized Manager logs in.
+- **Account Profiles**: Fast profile selection for center managers (e.g. *Manager Whitefield*, *Manager Brookfield*, *Assistant Manager*) or direct login with username/email.
+- **BCrypt Password & PIN Verification**: Verifies against MongoDB Atlas password hashes with fallback to the center manager PIN (`9999`).
+- **One-Tap Logout**: Immediate session termination locks the CRM and clears in-memory customer data.
+
+### 2. 📱 Full Telecom Default Phone Dialer
+- **Complete Phone Handling**: Incoming/Outgoing calls, native call state management, and heads-up notifications.
+- **Active In-Call Screen (`InCallActivity.kt`)**:
+  - Mute microphone, Loudspeaker toggle, Hold call.
+  - Redial and Dual-tone Multi-Frequency (DTMF) dial pad.
+  - Multi-party / Conference calling (`Merge Calls` and `Swap Calls`).
+- **Call History & Contact Management**:
+  - Filter by Incoming, Outgoing, and Missed calls.
+  - Direct in-app contact **Save, Edit, and Delete**.
+  - **Favorite Contacts** starring and Quick Call / Speed Dial.
+  - Redial last dialed number by tapping Call on an empty dial pad.
+
+### 3. 🎙️ Auto Call Recording & Audibility
+- **Auto Call Recording (`CallRecorder.kt`)**: Automatically starts recording when an incoming or outgoing call connects.
+- **Hardware Voice Optimization**: Uses `VOICE_COMMUNICATION` with Automatic Gain Control (AGC) and Acoustic Echo Cancellation (AEC), multi-source fallback, and high-fidelity 44.1kHz / 128kbps AAC encoding.
+- **Audio Mode Reset**: Explicitly resets the system `AudioManager` to `MODE_NORMAL` upon call disconnection to prevent low speaker volume.
+- **Built-in Player (`CallRecordingPlayerDialog.kt`)**: In-app playback dialog with audio waveform progress, loudspeaker volume boost, and speaker/earpiece routing toggle.
+
+### 4. 📋 Lead Pipeline, Calling Reports & Demo Scheduling
+- **Lead Pipeline Analytics**:
+  - Daily, weekly, and monthly calling metrics (total calls, outgoing, incoming, missed, connected, average call duration, and total talk time).
+  - Funnel breakdown: *New Lead, Contacted, Interested, Call Later, Demo Booked, Converted, Lost, Spam*.
+  - Collapsible summary bar to keep the enquiries tab clean and uncluttered.
+- **Schedule Demo & Tasks (`ScheduleTaskDialog`)**:
+  - Select existing students/leads directly from the live enquiry search picker.
+  - Automatically pre-fills course interest, updates lead status to *Demo Booked*, and sets exact follow-up alarms via `AlarmManager`.
+- **Direct WhatsApp Integration**: One-click opening of WhatsApp (`wa.me`) directly from customer profiles without requiring pre-saved contacts.
+
+### 5. 🔄 MongoDB Atlas Live Synchronization & Offline Cache
+- **Offline-First SQLite Cache (`EnquiryDatabaseHelper.kt`)**: Instant sub-5ms Caller ID resolution and local caching for seamless offline operation.
+- **Live MongoDB Sync (`MongoAtlasSyncManager.kt`)**: Two-way synchronization between device local SQLite and remote MongoDB Atlas collections (`users`, `enquiries`, `call_records`).
+- **CLI Sync Scripts**:
+  - `sync-leads.ps1` / `sync-leads.bat`: Direct CLI sync for leads and enquiries.
+  - `sync-calls.ps1` / `sync-calls.bat`: Direct CLI sync for call logs and duration records.
+- **CRM Webhook Integration (`CrmWebhookSync.kt`)**: Real-time push to Google Sheets, Make.com, Zapier, Airtable, or custom endpoints after every completed call.
+
+---
+
+## 🏗️ Project Architecture
 
 ```
 app/src/main/java/com/dialer/truedialer/
-├── AppConfig.kt                        # Database, CRM Webhook, and Spam settings
-├── MainActivity.kt                     # Main entry point & runtime permissions
-├── TrueDialerApplication.kt            # Notification channels & database init
+├── AppConfig.kt                        # Global config, session state, centers & preferences
+├── MainActivity.kt                     # Application entry point, navigation & permissions
+├── TrueDialerApplication.kt            # Notification channels & database initialization
 │
 ├── data/
 │   ├── local/
-│   │   └── EnquiryDatabaseHelper.kt   # Offline SQLite cache (Enquiries, Notes, Reminders)
+│   │   └── EnquiryDatabaseHelper.kt   # SQLite engine (Users, Enquiries, Calls, Follow-ups)
 │   ├── model/
-│   │   ├── Enquiry.kt                 # Lead model
-│   │   ├── CallRecord.kt              # Call log model
+│   │   ├── CenterUser.kt              # Center user profiles, manager roles & auth
+│   │   ├── Enquiry.kt                 # Lead & student profile data model
+│   │   ├── CallRecord.kt              # Historical call records & durations
 │   │   ├── ContactRecord.kt           # Device contact model
-│   │   ├── MessageTemplate.kt         # WhatsApp Business template model
-│   │   └── FollowUpReminder.kt        # Scheduled reminder model
+│   │   ├── FollowUpReminder.kt        # Scheduled tasks and demo alarms
+│   │   └── MessageTemplate.kt         # Message templates
 │   └── repository/
-│       ├── EnquiryRepository.kt       # Interface
-│       ├── LocalFirstEnquiryRepository.kt # Offline-first cache + remote sync
-│       ├── MockEnquiryRepository.kt   # In-memory mock
-│       ├── RemoteEnquiryRepository.kt # HTTP client for remote backend
-│       └── ContactsRepository.kt      # Unsaved contact checker & saver
+│       ├── EnquiryRepository.kt       # Lead data abstraction
+│       ├── LocalFirstEnquiryRepository.kt # Offline SQLite + remote sync
+│       ├── ContactsRepository.kt      # Phonebook reader & direct editor
+│       └── CallLogRepository.kt       # System CallLog provider
+│
+├── receiver/
+│   ├── BootReceiver.kt                # Re-registers alarms on device restart
+│   ├── CallActionReceiver.kt          # Call actions (Hang up, Answer, Mute)
+│   └── CallReceiver.kt                # Telephony state broadcaster
 │
 ├── service/
-│   ├── CallerOverlayService.kt        # Jetpack Compose floating overlay
-│   ├── EnquiryCallScreeningService.kt # Android 10+ CallScreeningService
-│   ├── DialerInCallService.kt         # Telecom Default Dialer InCallService
-│   └── FollowUpNotificationReceiver.kt# AlarmManager broadcast receiver
+│   ├── ActiveCallManager.kt           # Call states, durations & recording triggers
+│   ├── CallNotificationManager.kt     # Heads-up and silent call notification channels
+│   ├── CallerOverlayService.kt        # Truecaller-style floating caller ID
+│   ├── DialerInCallService.kt         # Android Telecom InCallService implementation
+│   ├── EnquiryCallScreeningService.kt # Spam filtering and number screening
+│   └── FollowUpNotificationReceiver.kt# Exact alarm notifications
 │
 ├── sync/
-│   └── CrmWebhookSync.kt              # Google Sheets / CRM Webhook dispatcher
+│   ├── MongoAtlasSyncManager.kt       # REST sync with MongoDB Atlas Data API
+│   └── CrmWebhookSync.kt              # Real-time webhook dispatcher
 │
-├── util/
-│   ├── WhatsAppBusinessHelper.kt      # WhatsApp Business intent dispatcher
-│   ├── PhoneNumberUtils.kt            # Normalization & deep links
-│   └── PermissionUtils.kt             # Telecom & overlay permission helpers
+├── ui/
+│   ├── activities/
+│   │   ├── InCallActivity.kt          # Active in-call UI (Keypad, Hold, Speaker, Merge)
+│   │   └── PostCallActivity.kt        # Post-call outcome dialog & note taker
+│   ├── components/
+│   │   ├── CrmLoginView.kt            # Manager login & session gate
+│   │   ├── UserSwitcherDialog.kt      # Profile switcher with logout button
+│   │   ├── CallRecordingPlayerDialog.kt # Audio playback with loudspeaker boost
+│   │   ├── Dialpad.kt                 # T9 interactive dial pad
+│   │   ├── CallerIdCard.kt            # Live caller lookup card
+│   │   ├── ContactDetailDialog.kt     # In-app contact detail & editor
+│   │   └── SaveContactDialog.kt       # Quick contact saver
+│   └── screens/
+│       ├── DialerScreen.kt            # T9 dial pad, speed dial & redial
+│       ├── RecentsScreen.kt           # Call history with uniform cards & recording playback
+│       ├── ContactsScreen.kt          # Phonebook with Favorites and search
+│       ├── EnquiryListScreen.kt       # Lead management, calling reports & demo bookings
+│       ├── AnalyticsScreen.kt         # Pipeline analytics & follow-up queue
+│       ├── SettingsScreen.kt          # Preferences, user switcher & logout
+│       └── MainScreen.kt              # Bottom navigation host
 │
-└── ui/
-    ├── activities/
-    │   └── PostCallActivity.kt        # Post-call action screen
-    ├── components/
-    │   ├── Dialpad.kt                 # T9 keypad
-    │   ├── CallerIdCard.kt            # Live enquiry card above dialpad
-    │   ├── PostCallDialog.kt          # Quick notes, lead status & follow-up scheduler
-    │   ├── TemplateChooserSheet.kt    # WhatsApp Business template selector
-    │   ├── SaveContactDialog.kt       # 1-tap contact saver
-    │   └── EnquiryBadge.kt            # Status chip
-    └── screens/
-        ├── DialerScreen.kt            # T9 dialpad + live enquiry lookup
-        ├── RecentsScreen.kt           # Call history with enquiry tags & WhatsApp
-        ├── AnalyticsScreen.kt         # KPI metrics, pipeline funnel & follow-ups
-        ├── EnquiryListScreen.kt       # Backend enquiry list & search
-        ├── SettingsScreen.kt          # CRM Webhook, Spam filter, Database & Simulator
-        └── MainScreen.kt              # Bottom navigation scaffold
+└── util/
+    ├── CallRecorder.kt                # MediaRecorder with AGC/AEC voice optimization
+    ├── CallRecordingUtils.kt          # File management & duration formatters
+    ├── PhoneNumberUtils.kt            # Number normalization & formatting
+    ├── DeviceUnlockHelper.kt          # Keyguard bypass for incoming call screens
+    └── PermissionUtils.kt             # Telecom, overlay, audio & contact permissions
 ```
 
 ---
 
-## 🛠️ Testing the New Features in Android Studio
+## 🛠️ Building & Installing
 
-1. Open project in **Android Studio**.
-2. Run on device or emulator (`Shift + F10`).
-3. In the app's **Settings** tab:
-   - Tap **Test Caller ID** to preview the Truecaller floating popup with lead details & WhatsApp button.
-   - Tap **Test Post-Call** to preview the post-call note taking, lead status changer, and follow-up scheduler.
-   - Enter your **CRM Webhook URL** and tap **Test Ping** to test live sync.
-   - Switch between **Mock Database** and **Remote Database** whenever ready.
+### Prerequisites
+- **Android SDK**: API 34 (Android 14) or higher.
+- **Java**: JDK 17.
+- **Build System**: Gradle 9.x / AGP 9.0.
+
+### Build APK
+Run the following command from the project root:
+
+```bash
+# Windows
+.\gradlew.bat assembleDebug
+
+# Linux / macOS
+./gradlew assembleDebug
+```
+
+The compiled APK will be output to:
+- `app/build/outputs/apk/debug/Soa Dialer.apk`
+- Pre-packaged standalone binary: `.\Soa Dialer.apk`
+
+### Install to Connected Device via ADB
+
+```bash
+adb install -r ".\Soa Dialer.apk"
+```
+
+### Launch the App
+
+```bash
+adb shell am start -n com.soa.phone/com.dialer.truedialer.MainActivity
+```
+
+---
+
+## 🔐 Credentials & Default Settings
+
+- **Default Manager PIN**: `9999`
+- **Supported Login Roles**: `MANAGER`, `ACADEMIC_MANAGER`, `OPERATIONS_MANAGER`, `MEDIA_MANAGER`, `PURCHASE_MANAGER`, `ADMIN`.
+- **Package Name**: `com.soa.phone`
+- **Default Center**: `SOA-Whitefield` (`67cd080a040cb823ea6c0744`)
+
+---
+
+## 📄 License
+Internal proprietary application developed for School of Athens (SOA). All rights reserved.
